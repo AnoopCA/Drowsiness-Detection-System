@@ -2,9 +2,9 @@ from ultralytics import YOLO
 import cv2
 
 model = YOLO(r"D:\ML_Projects\Drowsiness-Detection-System\Models\yolov8n-face.pt")
-vid_path = r"D:\ML_Projects\Drowsiness-Detection-System\Data\group.mp4"
+vid_path = r"D:\ML_Projects\Drowsiness-Detection-System\Data\group_2.mp4"
 
-vid = cv2.VideoCapture(0) #vid_path)
+vid = cv2.VideoCapture(vid_path)
 while vid.isOpened():
     ret, frame = vid.read()
 
