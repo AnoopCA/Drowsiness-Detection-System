@@ -35,5 +35,4 @@ mask_model = tf_model.fit(train_img, epochs=4, validation_data=test_img)
 # Save the model
 tf_model.save(r"D:\ML_Projects\Drowsiness-Detection-System\Models\drowse_model_tf_2.h5", mask_model)
 
-# Try with different batch size and check GPU utilization by tensorflow
 
