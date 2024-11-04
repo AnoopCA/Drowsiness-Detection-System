@@ -4,7 +4,7 @@ from tensorflow.keras.preprocessing import image
 import cv2
 from ultralytics import YOLO
 
-model_path = r"D:\ML_Projects\Drowsiness-Detection-System\Models\drowse_model_tf_1.h5"
+model_path = r"D:\ML_Projects\Drowsiness-Detection-System\Models\drowse_model_tf_2.h5"
 model = load_model(model_path)
 face_model = YOLO(r"D:\ML_Projects\Drowsiness-Detection-System\Models\yolov8n-face.pt")
 
