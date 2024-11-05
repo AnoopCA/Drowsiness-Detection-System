@@ -20,12 +20,12 @@ elif choice == "IMAGE":
         b = file.getvalue()
         d = np.frombuffer(b, np.uint8)
         img = cv2.imdecode(d, cv2.IMREAD_COLOR)
-        faces = eye_cascade.detectMultiScale(img)
-        for (x,y,l,w) in faces:
-            crop_face_1 = img[y:y+w, x:x+l]
-            cv2.imwrite('D:/ML_Projects/Drowsiness-Detection-System/Archives/temp.jpg', crop_face_1)
-            crop_face = load_img('D:/ML_Projects/Drowsiness-Detection-System/Archives/temp.jpg', target_size=(150,150,3))
-            crop_face = img_to_array(crop_face)
+        eyes = eye_cascade.detectMultiScale(img)
+        for (x,y,l,w) in eyes:
+            crop_eye_1 = img[y:y+w, x:x+l]
+            cv2.imwrite('D:/ML_Projects/Drowsiness-Detection-System/Archives/temp.jpg', crop_eye_1)
+            crop_eye = load_img('D:/ML_Projects/Drowsiness-Detection-System/Archives/temp.jpg', target_size=(64,64,3))
+            crop_eye = img_to_array(crop_eye)
             crop_face = np.expand_dims(crop_face, axis=0)
             pred = drowse_model.predict(crop_face)[0][0]
             if pred == 1:
