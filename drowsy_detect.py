@@ -2,52 +2,62 @@ from tensorflow.keras.models import load_model
 import numpy as np
 from tensorflow.keras.preprocessing import image
 import cv2
-from ultralytics import YOLO
+
+SKIP_FRAMES_BY = 15
+FRAMES_THRSH = 3
+count = 0
+eye_count = 0
+eye_closed = 0
 
 model_path = r"D:\ML_Projects\Drowsiness-Detection-System\Models\drowse_model_tf_2.h5"
 model = load_model(model_path)
-face_model = YOLO(r"D:\ML_Projects\Drowsiness-Detection-System\Models\yolov8n-face.pt")
+eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
 
 def preprocess_image(img_array):
-    img_array = cv2.resize(img_array, (256, 256))
+    img_array = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
+    img_array = cv2.resize(img_array, (80, 80))
     img_array = img_array.astype("float32") / 255.0
+    img_array = np.expand_dims(img_array, axis=-1)
     img_array = np.expand_dims(img_array, axis=0)
     return img_array
 
-vid = cv2.VideoCapture(0)
+vid = cv2.VideoCapture(0) #r"D:\ML_Projects\Drowsiness-Detection-System\Data\anp_test.mp4")
 while vid.isOpened():
     ret, frame = vid.read()
-
     if not ret:
         break
-    results = face_model(frame)
-    boxes = results[0].boxes
-
-    for box in boxes:
-        top_left_x = int(box.xyxy.tolist()[0][0])
-        top_left_y = int(box.xyxy.tolist()[0][1])
-        bottom_right_x = int(box.xyxy.tolist()[0][2])
-        bottom_right_y = int(box.xyxy.tolist()[0][3])
-
-        face_img = frame[top_left_y:bottom_right_y, top_left_x:bottom_right_x]
-
-        # -------------------------- Add new code to detect drowsiness using Eye Aspect Ratio -------------------------- #
-        
-        preprocessed_frame = preprocess_image(face_img)
-        prediction = model.predict(preprocessed_frame)
-        if prediction[0][0] < 0.5:
-            msg = "Drowsy"
+    count += 1
+    score = 0
+    if (count % SKIP_FRAMES_BY) == 0:
+        eyes = eye_cascade.detectMultiScale(frame, 1.1, 9)
+        for(x, y, w, h) in eyes:
+            eye_count += 1
+            img = frame[y:y+h, x:x+w]
+            #cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+            pred = model.predict(preprocess_image(img))
+            score += pred[0][0]
+        if eye_count == 0:
+            continue
         else:
-            msg = "Not Drowsy"
+            score = score / eye_count
+            eye_count = 0
+        if score < 0.7:
+            if eye_closed < (FRAMES_THRSH+1):
+                eye_closed += 1
+        else:
+            eye_closed -= 1
+            if eye_closed < 0:
+                eye_closed = 0
 
-        # ------------------------- Drowsiness detection section end here --------------------------------------------- #
-
-        cv2.putText(frame, msg, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+    print(f"score: {score}, eye_count : {eye_count}, eye_closed: {eye_closed}")
+    if eye_closed > (FRAMES_THRSH-1):
+        cv2.putText(frame, "Drowsy", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+    else:
+        cv2.putText(frame, "Not Drowsy", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     cv2.imshow("Detected Face", frame)
 
-    key = cv2.waitKey(1)
-    if key == ord("e"):
+    if cv2.waitKey(1) != -1:
         break
 
 vid.release()
