@@ -1,9 +1,23 @@
 from keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, BatchNormalization, Dropout
 from keras.models import Sequential
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.callbacks import Callback
 import time
 
 start_time = time.time()
+
+# Define a custom callback for saving the model every 10 epochs
+class ModelCheckpointEveryN(Callback):
+    def __init__(self, save_path, interval):
+        super(ModelCheckpointEveryN, self).__init__()
+        self.save_path = save_path
+        self.interval = interval
+
+    def on_epoch_end(self, epoch, logs=None):
+        if (epoch + 1) % self.interval == 0:
+            save_path = self.save_path.format(epoch=epoch + 1)
+            self.model.save(save_path)
+            print(f"\nModel saved at epoch {epoch + 1} to {save_path}")
 
 # Define the model
 tf_model = Sequential()
@@ -28,15 +42,12 @@ tf_model.compile(loss='binary_crossentropy', optimizer='Adam', metrics=['accurac
 train = ImageDataGenerator(rescale=1./255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
 test = ImageDataGenerator(rescale=1./255)
 train_path = r"D:\ML_Projects\Drowsiness-Detection-System\Data\MRL_Eye\train"
-train_img = train.flow_from_directory(train_path, target_size=(80,80), batch_size=512, class_mode='binary', color_mode='grayscale') #512-1:48
+train_img = train.flow_from_directory(train_path, target_size=(80,80), batch_size=64, class_mode='binary', color_mode='grayscale') #128 - 4 eph - 8:44
 test_path = r"D:\ML_Projects\Drowsiness-Detection-System\Data\MRL_Eye\test"
-test_img = test.flow_from_directory(test_path, target_size=(80,80), batch_size=512, class_mode='binary', color_mode='grayscale') #512
+test_img = test.flow_from_directory(test_path, target_size=(80,80), batch_size=64, class_mode='binary', color_mode='grayscale') #64 - 4 eph - 4 eph - 5:10
 
-# Train and test the model
-mask_model = tf_model.fit(train_img, epochs=2, validation_data=test_img)
-
-# Save the model
-tf_model.save(r"D:\ML_Projects\Drowsiness-Detection-System\Models\drowse_model_tf_4.h5", mask_model)
+save_callback = ModelCheckpointEveryN(save_path=r"D:\ML_Projects\Drowsiness-Detection-System\Models\drowse_model_tf_7_epoch_{epoch}.h5", interval=10)
+mask_model = tf_model.fit(train_img, epochs=256, validation_data=test_img, callbacks=[save_callback])
 
 end_time = time.time()
 
