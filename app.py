@@ -8,6 +8,12 @@ model_path = r"D:\ML_Projects\Drowsiness-Detection-System\Models\drowse_model_tf
 drowse_model = load_model(model_path)
 eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
 
+def preprocess_image(img_array):
+    img_array = cv2.resize(img_array, (64, 64))
+    img_array = img_array.astype("float32") / 255.0
+    img_array = np.expand_dims(img_array, axis=0)
+    return img_array
+
 st.title("Drowsiness Detection System")
 choice = st.sidebar.selectbox("MENU", ("HOME", "IMAGE", "VIDEO", "CAMERA"))
 
@@ -22,17 +28,17 @@ elif choice == "IMAGE":
         img = cv2.imdecode(d, cv2.IMREAD_COLOR)
         eyes = eye_cascade.detectMultiScale(img)
         for (x,y,l,w) in eyes:
-            crop_eye_1 = img[y:y+w, x:x+l]
-            cv2.imwrite('D:/ML_Projects/Drowsiness-Detection-System/Archives/temp.jpg', crop_eye_1)
-            crop_eye = load_img('D:/ML_Projects/Drowsiness-Detection-System/Archives/temp.jpg', target_size=(64,64,3))
+            crop_eye = img[y:y+w, x:x+l]
             crop_eye = img_to_array(crop_eye)
-            crop_face = np.expand_dims(crop_face, axis=0)
-            pred = drowse_model.predict(crop_face)[0][0]
-            if pred == 1:
+            crop_eye = preprocess_image(crop_eye)
+            pred = drowse_model.predict(crop_eye)[0][0]
+            if pred < 0.5:
                 cv2.rectangle(img, (x,y), (x+l,y+w), (0,0,255), 4)
+                cv2.putText(img, "Drowsy", (50,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
             else:
-                cv2.rectangle(img, (x,y), (x+l,y+w), (0,255, 0), 4)
-        st.image(img, channels='BGR', width=400)
+                cv2.rectangle(img, (x,y), (x+l,y+w), (0,255,0), 4)
+                cv2.putText(img, "Not Drowsy", (50,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+        st.image(img, channels='BGR')
 
 elif choice == "VIDEO":
     file = st.file_uploader("Upload Video")
@@ -42,18 +48,18 @@ elif choice == "VIDEO":
         while(vid.isOpened()):
             flag, frame=vid.read()
             if (flag):
-                faces = eye_cascade.detectMultiScale(frame)
-                for (x,y,l,w) in faces:
-                    crop_face_1 = frame[y:y+w, x:x+l]
-                    cv2.imwrite('D:/ML_Projects/Drowsiness-Detection-System/Archives/temp.jpg', crop_face_1)
-                    crop_face = load_img('D:/ML_Projects/Drowsiness-Detection-System/Archives/temp.jpg', target_size=(150,150,3))
-                    crop_face = img_to_array(crop_face)
-                    crop_face = np.expand_dims(crop_face, axis=0)
-                    pred = drowse_model.predict(crop_face)[0][0]
-                    if pred == 1:
+                eyes = eye_cascade.detectMultiScale(frame)
+                for (x,y,l,w) in eyes:
+                    crop_eye = frame[y:y+w, x:x+l]
+                    crop_eye = img_to_array(crop_eye)
+                    crop_eye = preprocess_image(crop_eye)
+                    pred = drowse_model.predict(crop_eye)[0][0]
+                    if pred < 0.5:
                         cv2.rectangle(frame, (x,y), (x+l,y+w), (0,0,255), 4)
+                        cv2.putText(frame, "Drowsy", (50,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
                     else:
                         cv2.rectangle(frame, (x,y), (x+l,y+w), (0,255, 0), 4)
+                        cv2.putText(frame, "Not Drowsy", (50,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
                     windows.image(frame, channels="BGR")
 
 elif choice == "CAMERA":
