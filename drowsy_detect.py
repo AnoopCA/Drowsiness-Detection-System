@@ -9,7 +9,9 @@ count = 0
 eye_count = 0
 eye_closed = 0
 
-model_path = r"D:\ML_Projects\Drowsiness-Detection-System\Models\drowse_model_tf_2.h5"
+#model_path = r"D:\ML_Projects\Drowsiness-Detection-System\Models\drowse_model_tf_2.h5"
+model_path = r"D:\ML_Projects\Drowsiness-Detection-System\Models\drowse_model_tf_7_epoch_250.h5"
+
 model = load_model(model_path)
 eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
 
@@ -17,7 +19,6 @@ def preprocess_image(img_array):
     img_array = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
     img_array = cv2.resize(img_array, (80, 80))
     img_array = img_array.astype("float32") / 255.0
-    img_array = np.expand_dims(img_array, axis=-1)
     img_array = np.expand_dims(img_array, axis=0)
     return img_array
 
@@ -49,13 +50,12 @@ while vid.isOpened():
             if eye_closed < 0:
                 eye_closed = 0
 
-    print(f"score: {score}, eye_count : {eye_count}, eye_closed: {eye_closed}")
     if eye_closed > (FRAMES_THRSH-1):
         cv2.putText(frame, "Drowsy", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
     else:
         cv2.putText(frame, "Not Drowsy", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-    cv2.imshow("Detected Face", frame)
+    cv2.imshow("Drowsiness Detection", frame)
 
     if cv2.waitKey(1) != -1:
         break
