@@ -42,11 +42,11 @@ tf_model.compile(loss='binary_crossentropy', optimizer='Adam', metrics=['accurac
 train = ImageDataGenerator(rescale=1./255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
 test = ImageDataGenerator(rescale=1./255)
 train_path = r"D:\ML_Projects\Drowsiness-Detection-System\Data\MRL_Eye\train"
-train_img = train.flow_from_directory(train_path, target_size=(80,80), batch_size=64, class_mode='binary', color_mode='grayscale') #128 - 4 eph - 8:44
+train_img = train.flow_from_directory(train_path, target_size=(80,80), batch_size=64, class_mode='binary', color_mode='grayscale')
 test_path = r"D:\ML_Projects\Drowsiness-Detection-System\Data\MRL_Eye\test"
-test_img = test.flow_from_directory(test_path, target_size=(80,80), batch_size=64, class_mode='binary', color_mode='grayscale') #64 - 4 eph - 4 eph - 5:10
+test_img = test.flow_from_directory(test_path, target_size=(80,80), batch_size=64, class_mode='binary', color_mode='grayscale')
 
-save_callback = ModelCheckpointEveryN(save_path=r"D:\ML_Projects\Drowsiness-Detection-System\Models\drowse_model_tf_7_epoch_{epoch}.h5", interval=10)
+save_callback = ModelCheckpointEveryN(save_path=r"D:\ML_Projects\Drowsiness-Detection-System\Models\drowse_model_tf_8_epoch_{epoch}.h5", interval=10)
 mask_model = tf_model.fit(train_img, epochs=256, validation_data=test_img, callbacks=[save_callback])
 
 end_time = time.time()
