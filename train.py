@@ -46,11 +46,13 @@ train_img = train.flow_from_directory(train_path, target_size=(80,80), batch_siz
 test_path = r"D:\ML_Projects\Drowsiness-Detection-System\Data\MRL_Eye\test"
 test_img = test.flow_from_directory(test_path, target_size=(80,80), batch_size=64, class_mode='binary', color_mode='grayscale')
 
+# Instantiate the custom model checkpoint callback to save the model every 10 epochs
 save_callback = ModelCheckpointEveryN(save_path=r"D:\ML_Projects\Drowsiness-Detection-System\Models\drowse_model_tf_8_epoch_{epoch}.h5", interval=10)
+# Train the TensorFlow model on the training data for 256 epochs. Use the test data for validation and include the custom save callback.
 mask_model = tf_model.fit(train_img, epochs=256, validation_data=test_img, callbacks=[save_callback])
 
+# Track and display the processing time
 end_time = time.time()
-
 execution_time = end_time - start_time
 hours, remainder = divmod(execution_time, 3600)
 minutes, seconds = divmod(remainder, 60)
