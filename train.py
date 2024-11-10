@@ -36,6 +36,7 @@ tf_model.add(Dense(10*10*256, activation='relu'))
 tf_model.add(Dropout(0.3))
 tf_model.add(Dense(784, activation='relu'))
 tf_model.add(Dense(1, activation='sigmoid'))
+# Compile the tensorflow model with specified loss, optimizer and evaluation matric
 tf_model.compile(loss='binary_crossentropy', optimizer='Adam', metrics=['accuracy'])
 
 # Preprocess and setup the data
