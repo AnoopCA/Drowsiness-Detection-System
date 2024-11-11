@@ -1,3 +1,4 @@
+# import necessary libraries
 from keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, BatchNormalization, Dropout
 from keras.models import Sequential
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
